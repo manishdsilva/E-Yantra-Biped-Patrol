@@ -70,13 +70,14 @@ function [eigen_values stability] = check_eigen_values(eqbm_pts, jacobian_matric
     matrix = jacobian_matrices{k};
     flag = 1;
     ################## ADD YOUR CODE HERE ######################
-   
+    
     eigen_values{k} = eig(matrix);
     
     Real_Part = real(double(eigen_values{k}));#Real Part of Eigen Values
     Imag_Part = imag(double(eigen_values{k})); #Imag Part of Eigen Values
     
     marginally_stable = []; # vector for marginally stable
+    mar_flag = 0;
     
     for j = 1:length(Real_Part) # Iterate over all Eigen Values
       if(Real_Part(j)>0)  # Unstable condition
@@ -85,14 +86,20 @@ function [eigen_values stability] = check_eigen_values(eqbm_pts, jacobian_matric
       endif
       
       if(Real_Part(j)== 0) # Marginally Stable condition
-        flag = 2;
+        flag = 2;##
+        mar_flag = 1;
         marginally_stable = [marginally_stable;Imag_Part(j)]; # append to vector
       endif
     endfor
-    
-    if(marginally_stable!=unique(marginally_stable)) #check if pole on Imaginary is repeated or not
-       flag = 0; #if repeated 
+
+    if(mar_flag == 1)
+      if(length(marginally_stable)!=length(unique(marginally_stable))) #check if pole on Imaginary is repeated or not
+        flag = 0; #if repeated 
+      else 
+        flag = 1
+      endif
     endif
+    
     
     ############################################################
     if flag == 1
