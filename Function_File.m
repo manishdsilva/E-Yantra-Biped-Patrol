@@ -45,9 +45,8 @@ function jacobian_matrices = find_jacobian_matrices(eqbm_points, x1_dot, x2_dot)
   ################## ADD YOUR CODE HERE ######################
   F = jacobian([x1_dot,x2_dot]);
   for k = 1:length(solutions)
-    jacobian_matrices{k} = subs(F,[x1,x2],solutions{k});
+    jacobian_matrices{k} = double(subs(F,[x1,x2],solutions{k}));
   endfor
-  
   ############################################################  
 endfunction
 
@@ -74,12 +73,26 @@ function [eigen_values stability] = check_eigen_values(eqbm_pts, jacobian_matric
    
     eigen_values{k} = eig(matrix);
     
-    eigen_values{k}
-    for j = 1:length(eigen_values{k})
-      #if(eigen_values{k})
-      #endif
+    Real_Part = real(double(eigen_values{k}));#Real Part of Eigen Values
+    Imag_Part = imag(double(eigen_values{k})); #Imag Part of Eigen Values
+    
+    marginally_stable = []; # vector for marginally stable
+    
+    for j = 1:length(Real_Part) # Iterate over all Eigen Values
+      if(Real_Part(j)>0)  # Unstable condition
+        flag = 0;
+        break;
+      endif
       
+      if(Real_Part(j)== 0) # Marginally Stable condition
+        flag = 2;
+        marginally_stable = [marginally_stable;Imag_Part(j)]; # append to vector
+      endif
     endfor
+    
+    if(marginally_stable!=unique(marginally_stable)) #check if pole on Imaginary is repeated or not
+       flag = 0; #if repeated 
+    endif
     
     ############################################################
     if flag == 1
