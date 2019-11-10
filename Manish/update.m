@@ -3,10 +3,11 @@ global A = csvread('sensor_data.csv');  #do not change this line
 ################################################
 #######Declare your global variables here#######
 ################################################
-
+global accelScaleFactor = 16384;
+global gyroScaleFactor = 131;
 
 function read_accel(axl,axh,ayl,ayh,azl,azh)  
-  
+  global accelScaleFactor;
   #################################################
   ####### Write a code here to combine the ########
   #### HIGH and LOW values from ACCELEROMETER #####
@@ -25,6 +26,9 @@ function read_accel(axl,axh,ayl,ayh,azl,azh)
     az = az  - 65536;
   endif
   f_cut = 5;
+  ax = ax/accelScaleFactor;
+  ay = ay/accelScaleFactor;
+  az = az/accelScaleFactor;
   ####################################################
   lowpassfilter(ax,ay,az,f_cut)
   ####################################################
@@ -32,7 +36,7 @@ function read_accel(axl,axh,ayl,ayh,azl,azh)
 endfunction
 
 function read_gyro(gxl,gxh,gyl,gyh,gzl,gzh)
-  
+  global gyroScaleFactor
   #################################################
   ####### Write a code here to combine the ########
   ###### HIGH and LOW values from GYROSCOPE #######
@@ -51,7 +55,9 @@ function read_gyro(gxl,gxh,gyl,gyh,gzl,gzh)
     az = az  - 65536;
   endif
   f_cut = 5;
-
+  ax = ax/gyroScaleFactor;
+  ay = ay/gyroScaleFactor;
+  az = az/gyroScaleFactor;
   #####################################################
   highpassfilter(ax,ay,az,f_cut)
   #####################################################;
@@ -94,14 +100,18 @@ function highpassfilter(gx,gy,gz,f_cut)
   ##############Write your code here##############
   ################################################
   try
-    fgx = (1-alpha)*gx + alpha*prev_gx; #filtered ax
-    fgy = (1-alpha)*gy + alpha*prev_gy;
-    fgz = (1-alpha)*gz + alpha*prev_gz;
+    fgx = (1-alpha)*(gx - prev_ux + prev_gx); #filtered ax
+    fgy = (1-alpha)*(gy - prev_uy + prev_gy);
+    fgz = (1-alpha)*(gz - prev_uz + prev_gz);
   catch 
     fgx = (1-alpha)*gx;
     fgy = (1-alpha)*gy;
     fgz = (1-alpha)*gz;
   end_try_catch
+  
+  prev_ux = gx;
+  prev_uy = gy;
+  prev_uz = gz;
   
   prev_gx = fgx;
   prev_gy = fgy;
