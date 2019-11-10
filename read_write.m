@@ -1,81 +1,77 @@
-global A = csvread('sensor_data.csv');  #do not change this line
+global A = csvread('csv_matter.csv');  #do not change this line
 
 ################################################
 #######Declare your global variables here#######
 ################################################
 
+global ax ay az gx gy gz
+accelScaleFactor = 16384;
+gyroScaleFactor = 131;
+f_cut = 5;
 
-function read_accel(axl,axh,ayl,ayh,azl,azh)  
+function read_accel(axl,axh,ayl,ayh,azl,azh)
   
+  global accelScaleFactor f_cut ax ay az;
   #################################################
-  ####### Write a code here to combine the ########
-  #### HIGH and LOW values from ACCELEROMETER #####
+  ax = bitshift(axh,8) + axl;
+  ax = ax/accelScaleFactor
+  
+  ay = bitshift(ayh,8) + ayl;
+  ay= ay/accelScaleFactor
+  
+  az = bitshift(azh,8) + azl;
+  az = az/accelScaleFactor
   #################################################
-
-  ax = 256*axh + axl -32767;
-  ay = 256*ayh + ayl -32767;
-  az = 256*azh + azl -32767;
-  f_cut = 5;
+  
   ####################################################
-  lowpassfilter(ax,ay,az,f_cut)
+  lowpassfilter(ax,ay,az,f_cut);
   ####################################################
-
+  
 endfunction
+#read_accel(160,1,196,0,0,60)
 
 function read_gyro(gxl,gxh,gyl,gyh,gzl,gzh)
   
   #################################################
-  ####### Write a code here to combine the ########
-  ###### HIGH and LOW values from GYROSCOPE #######
+  global gyroScaleFactor f_cut gx gy gz;
+  
+  gx = bitshift(gxh,8) + gxl;
+  gx = gx / gyroScaleFactor
+  
+  gy = bitshift(gyh,8) + gyl;
+  gy = gy / gyroScaleFactor
+  
+  gz = bitshift(gzh,8) + gzl;
+  gz = gz / gyroScaleFactor
   #################################################
-
-  ax = 256*gxh + gxl -32767;
-  ay = 256*gyh + gyl -32767;
-  az = 256*gzh + gzl -32767;
-  f_cut = 5;
-
+  
   #####################################################
-  highpassfilter(ax,ay,az,f_cut)
-  #####################################################;
+  highpassfilter(gx,gy,gz,f_cut) 
+  #####################################################
 
 endfunction
-
 
 
 function lowpassfilter(ax,ay,az,f_cut)
-  dT = 0.01;  #time in seconds
-  Tau= 0.5;
-  alpha = Tau/(Tau+dT);                #do not change this line
+  #dT = ;  #time in seconds
+  #Tau= ;
+  #alpha = Tau/(Tau+dT);                #do not change this line
   
   ################################################
   ##############Write your code here##############
   ################################################
-  try
-    #y[n] = (1-alpha)*x[n] + alpha*prev_val;
-  catch 
-    #y[n] = (1-alpha)*x[n];
-  end_try_catch
   
-  #prev_val = y[n];
 endfunction
 
-
-
 function highpassfilter(gx,gy,gz,f_cut)
-  dT = 0.01;  #time in seconds
-  Tau= 0.5;
-  alpha = Tau/(Tau+dT);                #do not change this line
+  #dT = ;  #time in seconds
+  #Tau= ;
+  #alpha = Tau/(Tau+dT);                #do not change this line
   
   ################################################
   ##############Write your code here##############
   ################################################
-  try
-    #y[n] = (1-alpha)*x[n] + alpha*prev_val;
-  catch 
-    #y[n] = (1-alpha)*x[n]; 
-  end_try_catch
   
-  #prev_val = y[n];
 endfunction
 
 function comp_filter_pitch(ax,ay,az,gx,gy,gz)
@@ -97,15 +93,14 @@ function comp_filter_roll(ax,ay,az,gx,gy,gz)
 endfunction 
 
 function execute_code
-  global A
-  B = A;
+  
+
   for n = 1:rows(A)                    #do not change this line
+    
     ###############################################
     ####### Write a code here to calculate  #######
-    ####### to call                         #######
+    ####### PITCH using complementry filter #######
     ###############################################
-    read_accel(A(n,2),A(n,1),A(n,4),A(n,3),A(n,6),A(n,5))
-    read_gyro(A(n,8),A(n,7),A(n,10),A(n,9),A(n,12),A(n,11))  
     
   endfor
   csvwrite('output_data.csv',B);        #do not change this line
