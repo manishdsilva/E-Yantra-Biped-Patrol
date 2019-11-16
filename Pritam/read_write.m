@@ -126,7 +126,7 @@ function comp_filter_pitch(ax,ay,az,gx,gy,gz)
   dt = 0.01;
   global pitch n;
   if (n==1)
-    pitch(n) = (1-alpha)*(gx*dt) + alpha*atand(ax/abs(az));
+    pitch(n) = (1-alpha)*(gx*dt) + alpha*atand(ay/abs(az));
   else
     pitch(n) = (1-alpha)*(pitch(n-1) + (gx*dt)) + alpha*atand(ay/abs(az));
   endif
@@ -172,6 +172,9 @@ function execute_code
   endfor
   csvwrite('output_data.csv',B);        #do not change this line
 endfunction
+
+execute_code                           #do not change this line
+
 figure(1)
 #plot(pitch,'b')
 #plot(pitch,'b',pitchOutput,'r')
@@ -179,5 +182,3 @@ figure(1)
 #plot(pitchOutput,'r')
 #figure(2)
 plot(roll,'b',rollOutput,'r') 
-
-execute_code                           #do not change this line
