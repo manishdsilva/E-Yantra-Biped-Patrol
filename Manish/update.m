@@ -1,155 +1,185 @@
-global A = csvread('sensor_data.csv');  #do not change this line
+global A = csvread('csv_matter.csv');  #do not change this line
+global C = csvread('csv_output.csv');
+global pitchOutput rollOutput B = zeros(1000,2);
 
 ################################################
 #######Declare your global variables here#######
 ################################################
-global accelScaleFactor = 16384;
-global gyroScaleFactor = 131;
 
-function read_accel(axl,axh,ayl,ayh,azl,azh)  
-  global accelScaleFactor;
+#global ax ay az gx gy gz = [0]*8000;
+global yax yay yaz ygx ygy ygz pitch roll = 0;
+global n gxPrevious gyPrevious gzPrevious;
+global f_cut = 5;
+
+function read_accel(axl,axh,ayl,ayh,azl,azh)
+ 
+  global f_cut;
+  accelScaleFactor = 16384;
   #################################################
-  ####### Write a code here to combine the ########
-  #### HIGH and LOW values from ACCELEROMETER #####
-  #################################################
-  
-  ax = 256*axh + axl;
-  ay = 256*ayh + ayl;
-  az = 256*azh + azl;  
-  if ax > 32767 
-    ax = ax  - 65536;
+  ax = bitshift(axh,8) + axl;
+  if (ax>32767)
+    ax = ax - 65536;
   endif
-  if ay > 32767 
-    ay = ay  - 65536;
+  ax = ax / accelScaleFactor;
+ 
+  ay = bitshift(ayh,8) + ayl;
+  if (ay >32767)
+    ay = ay - 65536;
   endif
-  if az > 32767 
-    az = az  - 65536;
-  endif
-  f_cut = 5;
-  ax = ax/accelScaleFactor;
   ay = ay/accelScaleFactor;
+ 
+  az = bitshift(azh,8) + azl;
+  if (az>32767)
+    az = az - 65536;
+  endif
   az = az/accelScaleFactor;
+  #################################################
+ 
   ####################################################
-  lowpassfilter(ax,ay,az,f_cut)
+  lowpassfilter(ax,ay,az,f_cut);
   ####################################################
-
+ 
 endfunction
 
 function read_gyro(gxl,gxh,gyl,gyh,gzl,gzh)
-  global gyroScaleFactor
+ 
   #################################################
-  ####### Write a code here to combine the ########
-  ###### HIGH and LOW values from GYROSCOPE #######
+  global f_cut n;
+  gyroScaleFactor = 131;
+ 
+  gx = bitshift(gxh,8) + gxl;
+  if (gx>32767)
+    gx = gx - 65536;
+  endif
+  gx = gx / gyroScaleFactor;
+ 
+  gy = bitshift(gyh,8) + gyl;
+  if (gy>32767)
+    gy = gy - 65536;
+  endif
+  gy = gy / gyroScaleFactor;
+ 
+  gz = bitshift(gzh,8) + gzl;
+  if (gz>32767)
+    gz = gz - 65536;
+  endif
+  gz = gz / gyroScaleFactor;
   #################################################
-
-  ax = 256*gxh + gxl;
-  ay = 256*gyh + gyl;
-  az = 256*gzh + gzl;
-  if ax > 32767 
-    ax = ax  - 65536;
-  endif
-  if ay > 32767 
-    ay = ay  - 65536;
-  endif
-  if az > 32767 
-    az = az  - 65536;
-  endif
-  f_cut = 5;
-  ax = ax/gyroScaleFactor;
-  ay = ay/gyroScaleFactor;
-  az = az/gyroScaleFactor;
+ 
   #####################################################
-  highpassfilter(ax,ay,az,f_cut)
-  #####################################################;
+  highpassfilter(gx,gy,gz,f_cut);
+  #####################################################
 
 endfunction
-
 
 
 function lowpassfilter(ax,ay,az,f_cut)
+  global n yax yay yaz;
   dT = 0.01;  #time in seconds
-  Tau= 1/31.416;
+  Tau= 1/2/3.1457/f_cut;                   #f_cut = 5
   alpha = Tau/(Tau+dT);                #do not change this line
-  
+ 
+  if(n == 1)
+    yax(n) = (1-alpha)*ax ;
+    yay(n) = (1-alpha)*ay ;
+    yaz(n) = (1-alpha)*az ;
+  else
+    yax(n) = (1-alpha)*ax + alpha*yax(n-1);
+    yay(n) = (1-alpha)*ay + alpha*yay(n-1);
+    yaz(n) = (1-alpha)*az + alpha*yaz(n-1);
+  endif
+
   ################################################
   ##############Write your code here##############
   ################################################
-  try
-    fax = (1-alpha)*ax + alpha*prev_ax; #filtered ax
-    fay = (1-alpha)*ay + alpha*prev_ay;
-    faz = (1-alpha)*az + alpha*prev_az;
-  catch 
-    fax = (1-alpha)*ax;
-    fay = (1-alpha)*ay;
-    faz = (1-alpha)*az;
-  end_try_catch
-  
-  prev_ax = fax;
-  prev_ay = fay;
-  prev_az = faz;
-  
+
 endfunction
 
-
 function highpassfilter(gx,gy,gz,f_cut)
+  global n ygx ygy ygz yax yay yaz gxPrevious gyPrevious gzPrevious;
   dT = 0.01;  #time in seconds
-  Tau= 1/31.416;
-  alpha = Tau/(Tau+dT);                #do not change this line
-  
+  Tau= 1 / 2 /3.1457 / f_cut;                   #f_cut = 5
+  alpha = Tau / (Tau+dT);               #do not change this line
+ 
+  if(n == 1)
+    ygx(n) = (1-alpha)*gx ;
+    ygy(n) = (1-alpha)*gy ;
+    ygz(n) = (1-alpha)*gz ;
+  else
+    ygx(n) = (1-alpha)*ygx(n-1) + (1-alpha)*(gx - gxPrevious);
+    ygy(n) = (1-alpha)*ygy(n-1) + (1-alpha)*(gy - gyPrevious);
+    ygz(n) = (1-alpha)*ygz(n-1) + (1-alpha)*(gz - gzPrevious);
+  endif
+  gxPrevious = gx;
+  gyPrevious = gy;
+  gzPrevious = gz;
+ 
   ################################################
   ##############Write your code here##############
   ################################################
-  try
-    fgx = (1-alpha)*(gx - prev_ux + prev_gx); #filtered ax
-    fgy = (1-alpha)*(gy - prev_uy + prev_gy);
-    fgz = (1-alpha)*(gz - prev_uz + prev_gz);
-  catch 
-    fgx = (1-alpha)*gx;
-    fgy = (1-alpha)*gy;
-    fgz = (1-alpha)*gz;
-  end_try_catch
-  
-  prev_ux = gx;
-  prev_uy = gy;
-  prev_uz = gz;
-  
-  prev_gx = fgx;
-  prev_gy = fgy;
-  prev_gz = fgz;
+  comp_filter_pitch(yax(n),yay(n),yaz(n),ygx(n),ygy(n),ygz(n));
+  comp_filter_roll(yax(n),yay(n),yaz(n),ygx(n),ygy(n),ygz(n));
 endfunction
 
 function comp_filter_pitch(ax,ay,az,gx,gy,gz)
-  alpha = 0.03
+  alpha = 0.03;
+  dt = 0.01;
+  global pitch n;
+  if (n==1)
+    (1-alpha)*(abs(gx)*dt) + alpha*atand(ay/abs(az));
+    pitch(n) = (1-alpha)*(abs(gx)*dt) + alpha*atand(ay/abs(az));
+  else
+    pitch(n) = (1-alpha)*(pitch(n-1) + (abs(gx)*dt)) + alpha*atand(ay/abs(az));
+  endif
+
   ##############################################
   ####### Write a code here to calculate  ######
   ####### PITCH using complementry filter ######
   ##############################################
+ 
 
-endfunction 
+endfunction
 
 function comp_filter_roll(ax,ay,az,gx,gy,gz)
-
+  alpha = 0.03;
+  dt = 0.01;
+  global roll n;
+  if (n==1)
+    roll(n) = (1-alpha)*(abs(gy)*dt) + alpha*atand(ax/abs(az));
+  else
+    roll(n) = (1-alpha)*(roll(n-1) + (abs(gx)*dt)) + alpha*atand(ax/abs(az));
+  endif
   ##############################################
   ####### Write a code here to calculate #######
   ####### ROLL using complementry filter #######
   ##############################################
 
-endfunction 
+endfunction
 
 function execute_code
-  global A
-  B = A;
-  for n = 1:rows(A)                    #do not change this line
+  global n A pitch roll B C pitchOutput rollOutput O;
+ 
+  for n = 1:1000                   #do not change this line
+    read_accel(A(n,2),A(n,1),A(n,4),A(n,3),A(n,6),A(n,5));
+    read_gyro(A(n,8),A(n,7),A(n,10),A(n,9),A(n,12),A(n,11));  
+    pitchOutput(n) = C(n,1);  
+    rollOutput(n) = C(n,2);   
     ###############################################
     ####### Write a code here to calculate  #######
-    ####### to call                         #######
+    ####### PITCH using complementry filter #######
     ###############################################
-    read_accel(A(n,2),A(n,1),A(n,4),A(n,3),A(n,6),A(n,5))
-    read_gyro(A(n,8),A(n,7),A(n,10),A(n,9),A(n,12),A(n,11))  
-    
+    B(n,1) = pitch(n);
+    B(n,2) = roll(n);
   endfor
   csvwrite('output_data.csv',B);        #do not change this line
 endfunction
 
-
 execute_code                           #do not change this line
+
+figure(1)
+#plot(pitch,'b')
+#plot(pitch,'b',pitchOutput,'r')
+#hold on;
+#plot(pitchOutput,'r')
+#figure(2)
+plot(roll,'b',rollOutput,'r') 
