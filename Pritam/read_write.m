@@ -126,9 +126,15 @@ function comp_filter_pitch(ax,ay,az,gx,gy,gz)
   dt = 0.01;
   global pitch n;
   if (n==1)
-    pitch(n) = (1-alpha)*(gx*dt) + alpha*atand(ay/abs(az));
+    pitch(n) = (1-alpha)*((-1)*gx*dt) + alpha*atand(ay/abs(az));
+    b1 = pitch(n) .* 10^5;
+    b2 = floor(b1);
+    pitch(n) = b2 ./ (10^5);
   else
     pitch(n) = (1-alpha)*(pitch(n-1) - (gx*dt)) + alpha*atand(ay/abs(az));
+    b1 = pitch(n) .* 10^5;
+    b2 = floor(b1);
+    pitch(n) = b2 ./ (10^5);
   endif
 
   ##############################################
@@ -144,9 +150,15 @@ function comp_filter_roll(ax,ay,az,gx,gy,gz)
   dt = 0.01;
   global roll n;
   if (n==1)
-    roll(n) = (1-alpha)*(gy*dt) + alpha*atand(ax/abs(az));
+    roll(n) = (1-alpha)*((-1)*gy*dt) + alpha*atand(ax/abs(az));
+    b1 = roll(n) .* 10^5;
+    b2 = floor(b1);
+    roll(n) = b2 ./ (10^5);
   else
     roll(n) = (1-alpha)*(roll(n-1) - (gy*dt)) + alpha*atand(ax/abs(az));
+    b1 = roll(n) .* 10^5;
+    b2 = floor(b1);
+    roll(n) = b2 ./ (10^5);
   endif
   ##############################################
   ####### Write a code here to calculate #######
