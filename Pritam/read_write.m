@@ -1,6 +1,6 @@
 global A = csvread('csv_matter.csv');  #do not change this line
-global C = csvread('csv_output.csv');
-global pitchOutput rollOutput B = zeros(1000,2);
+#global C = csvread('csv_output.csv');
+global pitchOutput rollOutput B = zeros(8000,2);
 
 ################################################
 #######Declare your global variables here#######
@@ -170,11 +170,11 @@ endfunction
 function execute_code
   global n A pitch roll B C pitchOutput rollOutput O;
  
-  for n = 1:1000                   #do not change this line
+  for n = 1:8000                   #do not change this line
     read_accel(A(n,2),A(n,1),A(n,4),A(n,3),A(n,6),A(n,5));
     read_gyro(A(n,8),A(n,7),A(n,10),A(n,9),A(n,12),A(n,11));  
-    pitchOutput(n) = C(n,1);  
-    rollOutput(n) = C(n,2);   
+    #pitchOutput(n) = C(n,1);  
+    #rollOutput(n) = C(n,2);   
     ###############################################
     ####### Write a code here to calculate  #######
     ####### PITCH using complementry filter #######
@@ -187,10 +187,18 @@ endfunction
 
 execute_code                           #do not change this line
 
-figure(1)
+################### Uncomment only the following 2 lines to plot pitch ##############
+#figure(1)
 #plot(pitch,'b')
-plot(pitch,'b',pitchOutput,'r')
+################################################################################
+
+#plot(pitch,'b',pitchOutput,'r')
 #hold on;
-#plot(pitchOutput,'r')
-figure(2)
-plot(roll,'b',rollOutput,'r') 
+
+################### Uncomment only the following 2 lines to plot roll ##############
+#figure(2)
+#plot(roll,'r')
+################################################################################
+
+#figure(2)
+#plot(roll,'b',rollOutput,'r') 
