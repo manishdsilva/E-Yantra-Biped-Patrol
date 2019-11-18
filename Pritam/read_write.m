@@ -128,7 +128,7 @@ function comp_filter_pitch(ax,ay,az,gx,gy,gz)
   if (n==1)
     pitch(n) = (1-alpha)*(gx*dt) + alpha*atand(ay/abs(az));
   else
-    pitch(n) = (1-alpha)*(pitch(n-1) + (gx*dt)) + alpha*atand(ay/abs(az));
+    pitch(n) = (1-alpha)*(pitch(n-1) - (gx*dt)) + alpha*atand(ay/abs(az));
   endif
 
   ##############################################
@@ -146,7 +146,7 @@ function comp_filter_roll(ax,ay,az,gx,gy,gz)
   if (n==1)
     roll(n) = (1-alpha)*(gy*dt) + alpha*atand(ax/abs(az));
   else
-    roll(n) = (1-alpha)*(roll(n-1) + (gy*dt)) + alpha*atand(ax/abs(az));
+    roll(n) = (1-alpha)*(roll(n-1) - (gy*dt)) + alpha*atand(ax/abs(az));
   endif
   ##############################################
   ####### Write a code here to calculate #######
@@ -177,8 +177,8 @@ execute_code                           #do not change this line
 
 figure(1)
 #plot(pitch,'b')
-#plot(pitch,'b',pitchOutput,'r')
+plot(pitch,'b',pitchOutput,'r')
 #hold on;
 #plot(pitchOutput,'r')
-#figure(2)
+figure(2)
 plot(roll,'b',rollOutput,'r') 
