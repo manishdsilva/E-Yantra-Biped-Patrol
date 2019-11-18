@@ -1,4 +1,4 @@
-global A = csvread('csv_matter.csv');  #do not change this line
+global A = csvread('sensor_data.csv');  #do not change this line
 global C = csvread('csv_output.csv');
 global pitchOutput rollOutput B = zeros(1000,2);
 
@@ -126,10 +126,15 @@ function comp_filter_pitch(ax,ay,az,gx,gy,gz)
   dt = 0.01;
   global pitch n;
   if (n==1)
-    (1-alpha)*(abs(gx)*dt) + alpha*atand(ay/abs(az));
-    pitch(n) = (1-alpha)*(abs(gx)*dt) + alpha*atand(ay/abs(az));
+    pitch(n) = (1-alpha)*(abs(gx)*dt) + alpha*atand(ay/abs(az)); 
+    b1 = pitch(n) .* 10^5;
+    b2 = floor(b1);
+    pitch(n) = b2 ./ (10^5);
   else
-    pitch(n) = (1-alpha)*(pitch(n-1) + (abs(gx)*dt)) + alpha*atand(ay/abs(az));
+    pitch(n) = ((1-alpha)*(pitch(n-1) + (abs(gx)*dt)) + alpha*atand(ay/abs(az)));
+    b1 = pitch(n) .* 10^5;
+    b2 = floor(b1);
+    pitch(n) = b2 ./ (10^5);
   endif
 
   ##############################################
@@ -146,8 +151,14 @@ function comp_filter_roll(ax,ay,az,gx,gy,gz)
   global roll n;
   if (n==1)
     roll(n) = (1-alpha)*(abs(gy)*dt) + alpha*atand(ax/abs(az));
+    b1 = roll(n) .* 10^5;
+    b2 = floor(b1);
+    roll(n) = b2 ./ (10^5);
   else
     roll(n) = (1-alpha)*(roll(n-1) + (abs(gx)*dt)) + alpha*atand(ax/abs(az));
+    b1 = roll(n) .* 10^5;
+    b2 = floor(b1);
+    roll(n) = b2 ./ (10^5);
   endif
   ##############################################
   ####### Write a code here to calculate #######
@@ -182,4 +193,5 @@ figure(1)
 #hold on;
 #plot(pitchOutput,'r')
 #figure(2)
+#plot(pitch,'b',pitchOutput,'r')
 plot(roll,'b',rollOutput,'r') 
