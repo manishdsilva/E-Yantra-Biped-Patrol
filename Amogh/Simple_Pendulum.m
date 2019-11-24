@@ -26,7 +26,7 @@ pkg load control
 ##*        http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode 
 ##*     
 ##*
-##*  This software is made available on an ìAS IS WHERE IS BASISî. 
+##*  This software is made available on an ‚ÄúAS IS WHERE IS BASIS‚Äù. 
 ##*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
 ##*  any and all claim(s) that emanate from the use of the Software or 
 ##*  breach of the terms of this agreement.
@@ -83,7 +83,7 @@ function dy = pendulum_dynamics(y, m, L, g, u)
   cos_theta = cos(y(1)); #costheta
   
   dy(1,1) = y(2);        #x1_dot = x2    dy(1,1) is theta dot: angular velo      
-  dy(2,1) = ((-g)*sin_theta/L) + (L/(m*(L)^2)*u) ;            #Fill this  dy(2,1) is theta dot dot: angular accel
+  dy(2,1) = ((-g)*sin_theta/L) + (1/(m*(L)^2)*u) ;            #Fill this  dy(2,1) is theta dot dot: angular accel
  #Second equation: x2_dot = (-g/l)sintheta + (1/ml^2)T Here T = u
 endfunction
 
@@ -177,13 +177,13 @@ endfunction
 function simple_pendulum_main()
   m = 1;             
   g = 9.8;
-  L = 0.5;
+  L = 1.0;
   y_setpoint = [pi; 0];                ## Set Point 
   y0 = [pi/6 ; 0];                   ## Initial condtion
   
-  ##[t,y] = sim_pendulum(m,g,L, y0);        ## Test Simple Pendulum
+  [t,y] = sim_pendulum(m,g,L, y0);        ## Test Simple Pendulum
   ##[t,y] = pole_place_pendulum(m,g,L, y_setpoint, y0) ;## Test Simple Pendulum with Pole Placement Controller
-  [t,y] = lqr_pendulum(m,g,L, y_setpoint, y0);        ## Test Simple Pendulum with LQR Controller
+  ##[t,y] = lqr_pendulum(m,g,L, y_setpoint, y0);        ## Test Simple Pendulum with LQR Controller
 
   for k = 1:length(t)
     draw_pendulum(y(k, :), L);  
