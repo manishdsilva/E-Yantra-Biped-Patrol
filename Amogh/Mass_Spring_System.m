@@ -26,7 +26,7 @@ pkg load control
 ##*        http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode 
 ##*     
 ##*
-##*  This software is made available on an ìAS IS WHERE IS BASISî. 
+##*  This software is made available on an ‚ÄúAS IS WHERE IS BASIS‚Äù. 
 ##*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
 ##*  any and all claim(s) that emanate from the use of the Software or 
 ##*  breach of the terms of this agreement.
@@ -78,7 +78,7 @@ endfunction
 ##          govern this system.
 function dy = mass_spring_dynamics(y, m, k, u)
   dy(1,1) = y(2); # x2 = x1_dot
-  dy(2,1) = (norm(u)/m) - (k*(y(1))/m);     #Fill second eqn
+  dy(2,1) = (u/m) - (k*(y(1))/m);     #Fill second eqn
   #Second Equation: x2_dot = (F/m) - (k*x1/m)
 endfunction
 
@@ -138,7 +138,7 @@ function [t,y] = pole_place_mass_spring(m, k, y_setpoint, y0)
   K = place(A,B,eigs);                ## Calculate K matrix for desired eigenvalues
   
   tspan = 0:0.1:10;                   ## Initialise time step 
-  [t,y] = ode45(@(t,y)mass_spring_dynamics(y,m,k, -K*(y-y_setpoint)),tspan,y0);
+  [t,y] = ode45(@(t,y)mass_spring_dynamics(y,m,k,-K*(y-y_setpoint)),tspan,y0);
 endfunction
 
 ## Function : lqr_mass_spring()
@@ -157,14 +157,12 @@ endfunction
 ##          tf = 10 with initial condition y0 and input u = -Kx where K is
 ##          calculated using LQR
 function [t,y] = lqr_mass_spring(m, k, y_setpoint, y0)
-  #[A,B] = ;  ## Initialize A and B matrix 
-  #Q = ;                  ## Initialise desired eigenvalues
-  #R = ;               ## Calculate K matrix for desired eigenvalues
-  
-  #K = ;
-  
+  [A,B] = mass_spring_AB_matrix(m, k);  ## Initialize A and B matrix 
+  Q = [5 0 ; 0 5 ];                  ## Initialise desired eigenvalues
+  R = 1;               ## Calculate K matrix for desired eigenvalues
+  K = lqr(A,B,Q,R);
   tspan = 0:0.1:10;                   ## Initialise time step 
-  #[t,y] = ;
+  [t,y] = ode45(@(t,y)mass_spring_dynamics(y, m, k,-K*(y-y_setpoint)),tspan,y0);
 endfunction
 
 ## Function : mass_spring_main()
@@ -179,8 +177,8 @@ function mass_spring_main()
   y_setpoint = [0.4; 0];
   
   ##[t,y] = sim_mass_spring(m,k, y0);      ## Test mass spring system with no input
-  [t,y] = pole_place_mass_spring(m, k, y_setpoint, y0); ## Test system with Pole Placement controller
-##   [t,y] = lqr_mass_spring(m, k, y_setpoint, y0);  ## Test system with LQR controller
+  ##[t,y] = pole_place_mass_spring(m, k, y_setpoint, y0); ## Test system with Pole Placement controller
+  [t,y] = lqr_mass_spring(m, k, y_setpoint, y0);  ## Test system with LQR controller
   for k = 1:length(t)
     draw_mass_spring(y(k, :));  
   endfor
