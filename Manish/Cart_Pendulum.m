@@ -158,8 +158,8 @@ endfunction
 ##          
 ## Purpose: Declare the A and B matrices in this function.
 function [A, B] = cart_pendulum_AB_matrix(m , M, L, g)
-  A = [0 1 0 0;0 0 (m*g)/M 0;0 0 0 1;0 0 (M+m)*g/(L*M) 0];
-  B = [0;1/M;0;1/(M*L)];  
+  A = [0 1 0 0;0 0 -(m*g)/M 0;0 0 0 1;0 0 -(M+m)*g/(L*M) 0];
+  B = [0;1/M;0;-1/(M*L)];  
 endfunction
 
 ## Function : pole_place_cart_pendulum()
@@ -183,7 +183,7 @@ function [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0)
   
   [A,B] = cart_pendulum_AB_matrix(m , M, L, g); ## Initialize A and B matrix
   eigs = [-12;-5;-5;-1]  ;                             ## Initialise desired eigenvalues
-  #eigs = [-12;-9;-5;-3]  ;
+  eigs = [-0.001;-0.01;-0.01;-0.01]  ;
   K = place(A,B,eigs);   ## Calculate K matrix for desired eigenvalues
   #size(K)
   tspan = 0:0.1:10; 
