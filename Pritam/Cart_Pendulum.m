@@ -1,6 +1,6 @@
 1;
 pkg load control
-
+global y;
 
 ##**************************************************************************
 ##*                OCTAVE PROGRAMMING (e-Yantra 2019-20)
@@ -112,7 +112,7 @@ function dy = cart_pendulum_dynamics(y, m, M, L, g,  u)
 ##  dy(1,1) = y(2);
 ##  dy(2,1) = ((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(3)*y(3)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L))
 ##  dy(3,1) = y(4);
-##  dy(4,1) = ((u*m*L*cos_theta)+(-m*g*L*sin_theta*(M+m))-(m*m*y(3)*y(3)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
+##  dy(4,1) = ((u*m*L*cos_theta)+(m*g*L*sin_theta*(M+m))-(m*m*y(3)*y(3)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
 ##
 
   sin_theta = sin(y(3)); #sintheta
@@ -121,7 +121,7 @@ function dy = cart_pendulum_dynamics(y, m, M, L, g,  u)
   dy(2,1) = ((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(4)*y(4)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L));
   dy(3,1) = y(4);
   dy(4,1) = (1/L)*(cos_theta*(((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(4)*y(4)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L))) - g*sin_theta) ;
-
+  #dy(4,1) = ((u*m*L*cos_theta)+(-m*g*L*sin_theta*(M+m))-(m*m*y(4)*y(4)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
 
 
 endfunction
@@ -160,12 +160,14 @@ endfunction
 ## Purpose: Declare the A and B matrices in this function.
 function [A, B] = cart_pendulum_AB_matrix(m , M, L, g)
   
-  p = (m*L*((g/L) + (y(4)*y(4))))/M ;
-  q = ((-m/M)*((g/L) + (y(4)*y(4)))) - (g/L) ;
-  
-  A = [0 1 0 0; 0 0 p 0; 0 0 0 1; 0 0 q 0];
-  
-  B = [0; (1/(M+m)); 0; 0];
+##  global y;
+##  
+##  p = (m*L*((g/L) + (y(4)*y(4))))/M ;
+##  q = ((-m/M)*((g/L) + (y(4)*y(4)))) - (g/L) ;
+##  
+##  A = [0 1 0 0; 0 0 p 0; 0 0 0 1; 0 0 q 0];
+##  
+##  B = [0; (1/(M+m)); 0; 0];
   
 endfunction
 
@@ -189,7 +191,7 @@ endfunction
 function [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0)
   
   [A, B] = cart_pendulum_AB_matrix(m, M, L, g);
-  eigs = [-5;-6];                    ## Initialise desired eigenvalues
+  eigs = [-1;-1.5];                    ## Initialise desired eigenvalues
   K = place(A,B,eigs);   
   
   tspan = 0:0.1:10;
@@ -230,12 +232,12 @@ function cart_pendulum_main()
   M = 5;
   L = 2;
   g = 9.8;
-  y0 = [-4; 0; pi + 0.8; 0];
+  #y0 = [-4; 0; pi + 0.8; 0];
   y_setpoint = [0; 0; pi; 0];
-  
+  y0 = [0; 0; pi + 0.8; 0];
   #[t,y] = sim_cart_pendulum(m, M, L, g, y0);
   [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0);
-##  [t,y] = lqr_cart_pendulum(m, M, L, g, y_setpoint, y0);
+## [t,y] = lqr_cart_pendulum(m, M, L, g, y_setpoint, y0);
   
   for k = 1:length(t)
     draw_cart_pendulum(y(k, :), m, M, L);  
