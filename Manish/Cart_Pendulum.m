@@ -1,6 +1,6 @@
 1;
 pkg load control
-
+global y;
 
 ##**************************************************************************
 ##*                OCTAVE PROGRAMMING (e-Yantra 2019-20)
@@ -62,7 +62,7 @@ function draw_cart_pendulum(y,m, M, L)
   w2y = 0;
   
   px = x - L*sin(theta);
-  py = y + L*cos(theta);
+  py = y - L*cos(theta);
    
   hold on;
   clf;
@@ -98,21 +98,38 @@ endfunction
 ## Purpose: Calculates the value of the vector dy according to the equations which 
 ##          govern this system.
 function dy = cart_pendulum_dynamics(y, m, M, L, g,  u)
+    
+##  sin_theta = sin(y(3));
+##  cos_theta = cos(y(3)); 
+##  dy(1,1) = y(2);
+##  dy(2,1) = (((u) + m*L*(((g*sin_theta*cos_theta)/L) - (y(3)*y(3)*sin_theta)))/((M + m) - (m*cos_theta*cos_theta))) ;
+##  dy(3,1) = y(4);
+##  dy(4,1) = (cos_theta*(((u) + m*L*(((g*sin_theta*cos_theta/L) - (y(3)*y(3)*sin_theta)))/((M + m) - (m*cos_theta*cos_theta))) + g*sin_theta)) / L ; 
+##  
+
+##  sin_theta = sin(y(3)); #sintheta
+##  cos_theta = cos(y(3));
+##  dy(1,1) = y(2);
+##  dy(2,1) = ((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(3)*y(3)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L))
+##  dy(3,1) = y(4);
+##  dy(4,1) = ((u*m*L*cos_theta)+(m*g*L*sin_theta*(M+m))-(m*m*y(3)*y(3)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
+##
   
   sin_theta = sin(y(3)); #sintheta
   cos_theta = cos(y(3));
   dy(1,1) = y(2);
-  dy(2,1) = ((u*L)+(m*g*L*cos_theta*sin_theta)-(m*L*L*y(3)*y(3)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L))
+  dy(2,1) = ((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(4)*y(4)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L));
   dy(3,1) = y(4);
-  dy(4,1) = ((u*m*L*cos_theta)+(m*g*L*sin_theta*(M+m))-(m*m*y(3)*y(3)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
-
+  dy(4,1) = (1/L)*(cos_theta*(((u*L)+(-m*g*L*cos_theta*sin_theta)-(m*L*L*y(4)*y(4)*sin_theta))/(((M+m)*L)-(m*cos_theta*cos_theta*L))) - g*sin_theta) ;
+  #dy(4,1) = ((u*m*L*cos_theta)+(-m*g*L*sin_theta*(M+m))-(m*m*y(4)*y(4)*cos_theta*sin_theta*L*L))/((m*L*L*(M+m))-(m*L*cos_theta*m*L*cos_theta)); 
+ 
 endfunction
 
 ## Function : sim_cart_pendulum()
 ## ----------------------------------------------------
 ## Input:   m - Mass of pendulum bob
 ##          M - Mass of cart
-##          L - Length of c
+##          L - Length of cart
 ##          g  - Acceleration due to gravity
 ##          y0 - Initial Condition of system
 ##
@@ -126,7 +143,7 @@ endfunction
 function [t,y] = sim_cart_pendulum(m, M, L, g, y0)
   tspan = 0:0.1:10;                  ## Initialise time step           
   u = 0;                             ## No Input
-  [t,y] = ode45(@(t,y)cart_pendulum_dynamics(y, m, M, L, g,  u),tspan,y0); ## Solving the differential equation    
+  [t,y] = ode45(@(t,y)cart_pendulum_dynamics(y,m,M,L,g,u),tspan,y0); ## Solving the differential equation    
 endfunction
 
 ## Function : cart_pendulum_AB_matrix()
@@ -141,8 +158,8 @@ endfunction
 ##          
 ## Purpose: Declare the A and B matrices in this function.
 function [A, B] = cart_pendulum_AB_matrix(m , M, L, g)
-  A = 0;
-  B = 0;  
+  A = [0 1 0 0;0 0 (m*g)/M 0;0 0 0 1;0 0 (M+m)*g/(L*M) 0];
+  B = [0;1/M;0;1/(M*L)];  
 endfunction
 
 ## Function : pole_place_cart_pendulum()
@@ -164,9 +181,19 @@ endfunction
 ##          calculated using Pole Placement Technique.
 function [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0)
   
-  tspan = 0:0.1:10;
-  [t,y] = 0;
+  [A,B] = cart_pendulum_AB_matrix(m , M, L, g); ## Initialize A and B matrix
+  eigs = [-12;-5;-5;-1]  ;                             ## Initialise desired eigenvalues
+  #eigs = [-12;-9;-5;-3]  ;
+  K = place(A,B,eigs);   ## Calculate K matrix for desired eigenvalues
+  #size(K)
+  tspan = 0:0.1:10; 
+  disp("hi1")  
+  [t,y] = ode45(@(t,y)cart_pendulum_dynamics(y,m,M,L,g,-K*(y-y_setpoint)),tspan,y0);
+  
+  #[t,y] = ode45(@(t,y)cart_pendulum_dynamics(y, m, M, L, g, -K*(y-y_setpoint)),tspan,y0);
+  disp("hi2")
 endfunction
+
 
 ## Function : lqr_cart_pendulum()
 ## ----------------------------------------------------
@@ -187,8 +214,13 @@ endfunction
 ##          calculated using LQR Controller.
 function [t,y] = lqr_cart_pendulum(m, M, L, g, y_setpoint, y0)
   
-  tspan = 0:0.1:10;
-  [t,y] = 0;
+  [A,B] = cart_pendulum_AB_matrix(m , M, L, g); 
+  Q = [10 0 0 0 ; 0 1 0 0 ; 0 0 10 0 ; 0 0 0 1];
+  R = 0.001*[1];  
+
+  K = lqr(A,B,Q,R);
+  tspan = 0:0.1:10;                  ## Initialise time step 
+  [t,y] = ode45(@(t,y)cart_pendulum_dynamics(y, m, M, L, g, -K*(y-y_setpoint)),tspan,y0);
 endfunction
 
 ## Function : cart_pendulum_main()
@@ -201,16 +233,17 @@ function cart_pendulum_main()
   M = 5;
   L = 2;
   g = 9.8;
-  y0 = [-4; 0; pi + 0.8; 0];
   y_setpoint = [0; 0; pi; 0];
+  y0 = [-4; 0; pi + 0.8; 0];
   
-  [t,y] = sim_cart_pendulum(m, M, L, g, y0);
-##  [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0);
-##  [t,y] = lqr_cart_pendulum(m, M, L, g, y_setpoint, y0);
-  
+  #[t,y] = sim_cart_pendulum(m, M, L, g, y0);
+  [t,y] = pole_place_cart_pendulum(m, M, L, g, y_setpoint, y0);
+  #[t,y] = lqr_cart_pendulum(m, M, L, g, y_setpoint, y0);
+  disp("hi")
   for k = 1:length(t)
     draw_cart_pendulum(y(k, :), m, M, L);  
   endfor
   
 endfunction
+
 cart_pendulum_main()
