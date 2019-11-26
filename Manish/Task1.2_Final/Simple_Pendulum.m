@@ -14,7 +14,7 @@ pkg load control
 ##*
 ##*  Team ID : 336
 ##*  Team Leader Name: Manish Michael Dsilva
-##*  Team Member Name: Kimaya Hemant Desai, Pritam Anand Mane, Amogh Zare
+##*  Team Member Name: Pritam Anand Mane, Amogh Shripad Zare, Kimaya Hemant Desai
 ##*
 ##*  
 ##*  Author: e-Yantra Project, Department of Computer Science
@@ -26,7 +26,7 @@ pkg load control
 ##*        http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode 
 ##*     
 ##*
-##*  This software is made available on an ìAS IS WHERE IS BASISî. 
+##*  This software is made available on an ‚ÄúAS IS WHERE IS BASIS‚Äù. 
 ##*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
 ##*  any and all claim(s) that emanate from the use of the Software or 
 ##*  breach of the terms of this agreement.
@@ -81,9 +81,9 @@ endfunction
 function dy = pendulum_dynamics(y, m, L, g, u)
   sin_theta = sin(y(1)); #sintheta
   cos_theta = cos(y(1)); #costheta
-  dy(1,1) = y(2);        #x1_dot = x2    dy(1,1) is theta dot: angular velo      
-  dy(2,1) = ((-g)*sin_theta/L) + (u/(m*(L)^2)) ;            #Fill this  dy(2,1) is theta dot dot: angular accel
- #Second equation: x2_dot = (-g/l)sintheta + (1/ml^2)T Here T = u
+  dy(1,1) = y(2);            
+  dy(2,1) = ((-g)*sin_theta/L) + (u/(m*(L)^2)) ;           
+
 endfunction
 
 ## Function : sim_pendulum()
