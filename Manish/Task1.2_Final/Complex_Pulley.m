@@ -26,7 +26,7 @@ pkg load control
 ##*        http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode 
 ##*     
 ##*
-##*  This software is made available on an ìAS IS WHERE IS BASISî. 
+##*  This software is made available on an ‚ÄúAS IS WHERE IS BASIS‚Äù. 
 ##*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
 ##*  any and all claim(s) that emanate from the use of the Software or 
 ##*  breach of the terms of this agreement.
@@ -240,4 +240,3 @@ function complex_pulley_main()
   
 endfunction
 
-complex_pulley_main() #remove this
