@@ -77,9 +77,8 @@ endfunction
 ## Purpose: Calculates the value of the vector dy according to the equations which 
 ##          govern this system.
 function dy = mass_spring_dynamics(y, m, k, u)
-  dy(1,1) = y(2); # x2 = x1_dot
-  dy(2,1) = (u/m) - (k*(y(1))/m);     #Fill second eqn
-  #Second Equation: x2_dot = (F/m) - (k*x1/m)
+  dy(1,1) = y(2); 
+  dy(2,1) = (u/m) - (k*(y(1))/m);     
 endfunction
 
 ## Function : sim_mass_spring()
